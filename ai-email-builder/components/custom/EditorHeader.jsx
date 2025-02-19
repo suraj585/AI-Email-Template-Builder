@@ -1,0 +1,56 @@
+"use client";
+import { useScreenSize } from "@/app/provider";
+import { Code, Monitor, Smartphone } from "lucide-react";
+import Image from "next/image";
+import { Button } from "../ui/button";
+
+function EditorHeader() {
+  // Correctly call the useScreenSize hook
+  const { screenSize, setScreenSize } = useScreenSize();
+
+  return (
+    <div className="p-4 shadow-sm flex justify-between items-center">
+      {/* Logo */}
+      <Image src={"/logo.svg"} alt="logo" width={160} height={150} />
+
+      {/* Screen size buttons */}
+      <div className="flex gap-3">
+        {/* Desktop Button */}
+        <Button
+          variant="ghost"
+          className={
+            screenSize === "desktop" ? "bg-purple-100 text-primary" : ""
+          }
+          onClick={() => setScreenSize("desktop")}
+        >
+          <Monitor /> Desktop
+        </Button>
+
+        {/* Mobile Button */}
+        <Button
+          variant="ghost"
+          className={
+            screenSize === "mobile" ? "bg-purple-100 text-primary" : ""
+          }
+          onClick={() => setScreenSize("mobile")}
+        >
+          <Smartphone /> Mobile
+        </Button>
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex gap-3">
+        <Button
+          variant="ghost"
+          className="hover:text-primary hover:bg-purple-100"
+        >
+          <Code />
+        </Button>
+        <Button variant="outline">Send Test Email</Button>
+        <Button>Save Template</Button>
+      </div>
+    </div>
+  );
+}
+
+export default EditorHeader;
