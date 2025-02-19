@@ -31,6 +31,7 @@ export default [
       borderRadius: "0px",
       fontWeight: "normal",
       objectFit: "contain",
+     
     },
     outerStyle: {
       display: "flex",

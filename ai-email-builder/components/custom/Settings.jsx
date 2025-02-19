@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import TextAreaField from "./Settings/TextAreaField";
 import DropdownField from "./Settings/DropdownField";
+import ImagePreview from "./Settings/ImagePreview";
 
 const TextAlignOptions = [
   {
@@ -66,8 +67,12 @@ function Settings() {
           padding: layout.style?.padding || "10px",
           width: layout.style?.width || "100%",
           borderRadius: layout.style?.borderRadius || "0px",
+          textAlign: layout.style?.textAlign || "left", // Default to 'left'
         },
-        // Always initialize textarea even if empty
+        outerStyle: {
+          ...layout.outerStyle,
+          justifyContent: layout.outerStyle?.justifyContent || "flex-start", // Default to 'flex-start'
+        },
         textarea: layout.textarea !== undefined ? layout.textarea : "",
       });
     }
@@ -119,9 +124,35 @@ function Settings() {
     setSelectedElement(updateElement);
   };
 
+  const onHandleOuterStyleChange = (fieldName, fieldValue) => {
+    const updateElement = {
+      ...selectedElement,
+      layout: {
+        ...selectedElement?.layout,
+        [selectedElement?.index]: {
+          ...selectedElement?.layout[selectedElement?.index],
+          outerStyle: {
+            ...selectedElement?.layout[selectedElement?.index]?.outerStyle,
+            [fieldName]: fieldValue,
+          },
+        },
+      },
+    };
+    setSelectedElement(updateElement);
+  };
+
   return (
     <div className="p-5 flex flex-col gap-4">
       <h2 className="font-bold text-xl">Settings</h2>
+      {element?.imageUrl && (
+        <ImagePreview
+          label="Image Preview"
+          value={element.imageUrl}
+          onHandleInputChange={(value) =>
+            onHandleInputChange("imageUrl", value)
+          }
+        />
+      )}
       {element?.content && (
         <InputField
           label="Content"
@@ -156,7 +187,7 @@ function Settings() {
       {element?.style.textAlign && (
         <ToogleGroupField
           label={"Text Align"}
-          value={element?.style.textAlign}
+          value={element?.style.textAlign || "left"} // Default to 'left'
           options={TextAlignOptions}
           onHandleStyleChange={(value) =>
             onHandleStyleChange("textAlign", value)
@@ -191,8 +222,8 @@ function Settings() {
       {element?.style.textTransform && (
         <ToogleGroupField
           label={"Text Transform"}
-          value={element?.style.textTransform}
-          options={TextTransformOptions} // Correct options
+          value={element?.style.textTransform || "none"} // Default to 'none'
+          options={TextTransformOptions}
           onHandleStyleChange={(value) =>
             onHandleStyleChange("textTransform", value)
           }
@@ -200,13 +231,13 @@ function Settings() {
       )}
       <div>
         <h3 className="font-bold">Preview:</h3>
-        <p>
+        <p style={{ textAlign: element?.style?.textAlign }}>
           <strong>Content:</strong>{" "}
           <span style={{ textTransform: element?.style?.textTransform }}>
             {element?.content || "No content entered"}
           </span>
         </p>
-        <p>
+        <p style={{ textAlign: element?.style?.textAlign }}>
           <strong>Text Area:</strong>{" "}
           <span style={{ textTransform: element?.style?.textTransform }}>
             {element?.textarea || "No text entered"}
@@ -220,6 +251,13 @@ function Settings() {
           onHandleStyleChange={(value) => onHandleStyleChange("padding", value)}
         />
       )}
+      {element?.style?.margin && (
+        <InputStyleField
+          label="Margin"
+          value={element.style.margin}
+          onHandleStyleChange={(value) => onHandleStyleChange("margin", value)}
+        />
+      )}
       {element?.style?.borderRadius && (
         <SliderField
           label="Border Radius"
@@ -229,17 +267,38 @@ function Settings() {
           }
         />
       )}
-
       {element?.style?.fontWeight && (
         <DropdownField
           label="Font Width"
           value={element.style.fontWeight}
-          options={['normal','bold']}
+          options={["normal", "bold"]}
           onHandleStyleChange={(value) =>
             onHandleStyleChange("fontWeight", value)
           }
         />
       )}
+      <div>
+        <h2 className="font-bold mb-2">Outer Style</h2>
+        {element?.outerStyle?.backgroundColor && (
+          <ColorPickerField
+            label="Background Color"
+            value={element.outerStyle.backgroundColor}
+            onHandleStyleChange={(value) =>
+              onHandleOuterStyleChange("backgroundColor", value)
+            }
+          />
+        )}
+        {element?.outerStyle?.justifyContent && (
+          <ToogleGroupField
+            label="Align"
+            value={element.outerStyle.justifyContent || "flex-start"} // Default to 'flex-start'
+            options={TextAlignOptions}
+            onHandleStyleChange={(value) =>
+              onHandleOuterStyleChange("justifyContent", value)
+            }
+          />
+        )}
+      </div>
     </div>
   );
 }
