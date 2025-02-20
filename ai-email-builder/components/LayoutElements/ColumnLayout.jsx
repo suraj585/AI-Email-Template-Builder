@@ -12,6 +12,7 @@ import LogoComponent from "../custom/Element/LogoComponent";
 import DividerComponent from "../custom/Element/DividerComponent";
 import SocialComponent from "../custom/Element/SocialComponent";
 import LogoHeaderComponent from "../custom/Element/LogoHeaderComponent";
+import { Trash } from "lucide-react";
 
 function ColumnLayout({ layout }) {
   const [dragOver, setDragOver] = useState();
@@ -37,38 +38,60 @@ function ColumnLayout({ layout }) {
           ? {
               ...col,
               [index]: {
-                ...dragElementLayout?.dragElement, // Spread the dragged element
-                textarea: dragElementLayout?.dragElement?.textarea || "", // Ensure `textarea` is preserved
+                ...dragElementLayout?.dragElement,
+                textarea: dragElementLayout?.dragElement?.textarea || "",
               },
             }
           : col
       )
     );
 
-    setDragOver(null); // Reset dragOver state after dropping
+    setDragOver(null);
   };
 
-  const GetElementComponent = (element) => {
-    if (!element) return null; // Return null if no element exists
+  const GetElementComponent = (element, index) => {
+    // Added index as a parameter
+    if (!element) return null;
 
     if (element?.type === "Button") {
       return <ButtonComponent {...element} />;
     } else if (element?.type === "Text") {
       return (
-        <div style={element.style}>
+        <div
+          style={{
+            ...element.style,
+            maxWidth: "100%",
+            width: "100%",
+            boxSizing: "border-box",
+            overflow: "hidden",
+          }}
+        >
           {element.textarea ? (
-            <p style={{ textTransform: element.style?.textTransform }}>
-              {/* Replace \n with <br> for proper rendering */}
-              {element.textarea.split("\n").map((line, index) => (
-                <React.Fragment key={index}>
-                  {line}
-                  <br />
-                </React.Fragment>
-              ))}
+            <p
+              style={{
+                textTransform: element.style?.textTransform,
+                whiteSpace: "pre-wrap",
+                wordWrap: "break-word",
+                overflowWrap: "break-word",
+                margin: 0,
+                padding: "5px",
+                maxWidth: "100%",
+                lineHeight: "1.5",
+              }}
+            >
+              {element.textarea}
             </p>
           ) : (
-            <p>{element.content || "Drag Element Here"}</p> // Fallback for `content`
+            <p>{element.content || "Drag Element Here"}</p>
           )}
+          {/* Debugging */}
+          {console.log("Text Element Details:", {
+            textarea: element.textarea,
+            style: element.style,
+            computedWidth: document?.querySelector(
+              `div[data-index="${layout?.id}-${index}"]`
+            )?.offsetWidth,
+          })}
         </div>
       );
     } else if (element?.type === "Image") {
@@ -98,35 +121,58 @@ function ColumnLayout({ layout }) {
 
   console.log("Current layout:", layout);
 
+  const deleteLayout = (layoutId) => {
+    const updateEmailTemplate = emailTemplate?.filter(
+      (item) => item.id != layoutId
+    );
+    setEmailTemplate(updateEmailTemplate);
+    setSelectedElement(null);
+  };
+
   return (
-    <div>
+    <div className="relative">
       <div
         style={{
           display: "grid",
           gridTemplateColumns: `repeat(${layout?.numOfCol},1fr)`,
           gap: "0px",
+          maxWidth: "100%",
+          width: "100%",
         }}
+        className={`${
+          selectedElement?.layout?.id === layout?.id &&
+          "border border-dashed border-blue-500"
+        }`}
       >
         {Array.from({ length: layout?.numOfCol }).map((_, index) => (
           <div
             key={index}
+            data-index={`${layout?.id}-${index}`} // Unique identifier for debugging
             className={`p-2 flex items-center cursor-pointer ${
               !layout?.[index]?.type && "bg-gray-100 border border-dashed"
-            } justify-center ${
-              index === dragOver?.index && dragOver?.columnId && "bg-green-100"
-            }
-            ${
+            } justify-center ${index === dragOver?.index && dragOver?.columnId} ${
               selectedElement?.layout?.id === layout?.id &&
               selectedElement?.index === index &&
-              "border-blue-500 border-2"
+              "border-blue-500 border-4"
             }`}
+            style={{ maxWidth: "100%", overflow: "hidden" }}
             onDragOver={(event) => onDragOverHandle(event, index)}
             onDrop={onDropHandle}
             onClick={() => setSelectedElement({ layout: layout, index: index })}
           >
-            {GetElementComponent(layout?.[index]) ?? "Drag Element Here"}
+            {GetElementComponent(layout?.[index], index) ?? "Drag Element Here"}{" "}
+            {/* Pass index */}
           </div>
         ))}
+
+        {selectedElement?.layout?.id === layout?.id && (
+          <div
+            className="absolute -right-10 cursor-pointer bg-gray-100 p-2 rounded-full hover:scale-105 transition-all hover:shadow-md"
+            onClick={() => deleteLayout(layout?.id)}
+          >
+            <Trash className="h-4 w-4 text-red-500" />
+          </div>
+        )}
       </div>
     </div>
   );
