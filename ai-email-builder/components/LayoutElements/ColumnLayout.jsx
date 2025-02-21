@@ -12,7 +12,7 @@ import LogoComponent from "../custom/Element/LogoComponent";
 import DividerComponent from "../custom/Element/DividerComponent";
 import SocialComponent from "../custom/Element/SocialComponent";
 import LogoHeaderComponent from "../custom/Element/LogoHeaderComponent";
-import { Trash } from "lucide-react";
+import { ArrowDown, ArrowUp, Trash } from "lucide-react";
 
 function ColumnLayout({ layout }) {
   const [dragOver, setDragOver] = useState();
@@ -50,7 +50,6 @@ function ColumnLayout({ layout }) {
   };
 
   const GetElementComponent = (element, index) => {
-    // Added index as a parameter
     if (!element) return null;
 
     if (element?.type === "Button") {
@@ -84,7 +83,6 @@ function ColumnLayout({ layout }) {
           ) : (
             <p>{element.content || "Drag Element Here"}</p>
           )}
-          {/* Debugging */}
           {console.log("Text Element Details:", {
             textarea: element.textarea,
             style: element.style,
@@ -129,8 +127,36 @@ function ColumnLayout({ layout }) {
     setSelectedElement(null);
   };
 
+  const moveItemUp = (layoutId) => {
+    const index = emailTemplate.findIndex((item) => item.id === layoutId);
+    if (index > 0) {
+      setEmailTemplate((prevItems) => {
+        const updatedItems = [...prevItems];
+        [updatedItems[index], updatedItems[index - 1]] = [
+          updatedItems[index - 1],
+          updatedItems[index],
+        ];
+        return updatedItems;
+      });
+    }
+  };
+
+  const moveItemDown = (layoutId) => {
+    const index = emailTemplate.findIndex((item) => item.id === layoutId);
+    if (index < emailTemplate.length - 1) {
+      setEmailTemplate((prevItems) => {
+        const updatedItems = [...prevItems];
+        [updatedItems[index], updatedItems[index + 1]] = [
+          updatedItems[index + 1],
+          updatedItems[index],
+        ];
+        return updatedItems;
+      });
+    }
+  };
+
   return (
-    <div className="relative">
+    <div className="relative mb-8">
       <div
         style={{
           display: "grid",
@@ -147,7 +173,7 @@ function ColumnLayout({ layout }) {
         {Array.from({ length: layout?.numOfCol }).map((_, index) => (
           <div
             key={index}
-            data-index={`${layout?.id}-${index}`} // Unique identifier for debugging
+            data-index={`${layout?.id}-${index}`}
             className={`p-2 flex items-center cursor-pointer ${
               !layout?.[index]?.type && "bg-gray-100 border border-dashed"
             } justify-center ${index === dragOver?.index && dragOver?.columnId} ${
@@ -160,20 +186,33 @@ function ColumnLayout({ layout }) {
             onDrop={onDropHandle}
             onClick={() => setSelectedElement({ layout: layout, index: index })}
           >
-            {GetElementComponent(layout?.[index], index) ?? "Drag Element Here"}{" "}
-            {/* Pass index */}
+            {GetElementComponent(layout?.[index], index) ?? "Drag Element Here"}
           </div>
         ))}
+      </div>
 
-        {selectedElement?.layout?.id === layout?.id && (
-          <div
-            className="absolute -right-10 cursor-pointer bg-gray-100 p-2 rounded-full hover:scale-105 transition-all hover:shadow-md"
+      {selectedElement?.layout?.id === layout?.id && (
+        <div className="absolute -right-16 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+          <button
+            className="bg-gray-100 p-2 rounded-full hover:scale-105 transition-all hover:shadow-md"
+            onClick={() => moveItemUp(layout?.id)}
+          >
+            <ArrowUp className="h-4 w-4" />
+          </button>
+          <button
+            className="bg-gray-100 p-2 rounded-full hover:scale-105 transition-all hover:shadow-md"
+            onClick={() => moveItemDown(layout?.id)}
+          >
+            <ArrowDown className="h-4 w-4" />
+          </button>
+          <button
+            className="bg-gray-100 p-2 rounded-full hover:scale-105 transition-all hover:shadow-md"
             onClick={() => deleteLayout(layout?.id)}
           >
             <Trash className="h-4 w-4 text-red-500" />
-          </div>
-        )}
-      </div>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
