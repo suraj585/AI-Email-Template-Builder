@@ -4,14 +4,28 @@ import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import Prompt from "@/Data/Prompt";
 import axios from "axios";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { v4 as uuidv4 } from "uuid";
+import { useUserDetail } from "@/app/provider";
+import { useRouter } from "next/navigation";
 
 function AIInputBox() {
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [generatedTemplate, setGeneratedTemplate] = useState(null);
+  const saveTemplate = useMutation(api.emailTemplate.SaveTemplate);
+  const { userDetail } = useUserDetail();
+  const router = useRouter();
 
   const OnGenerate = async () => {
+    if (!userDetail?.email) {
+      console.error("User email not available");
+      return;
+    }
+
     const PROMPT = Prompt.EMAIL_PROMPT + "\n-" + userInput;
+    const tid = uuidv4();
     setLoading(true);
     setGeneratedTemplate(null);
 
@@ -20,12 +34,30 @@ function AIInputBox() {
         prompt: PROMPT,
       });
       console.log("Generated Template:", result.data);
-      setGeneratedTemplate(result.data); // Store the result
+      setGeneratedTemplate(result.data);
+
+      const resp = await saveTemplate(
+        {
+          tid: tid,
+          design: result.data,
+          email: userDetail.email,
+        },
+        { optimisticUpdate: false } // Disable optimistic updates
+      );
+
+      if (!resp) {
+        throw new Error("Failed to save template");
+      }
+
+      console.log("Saved Template ID:", resp);
+      router.push('/editor/' + tid);
     } catch (e) {
-      console.error("Error Details:", e.response ? e.response.data : e.message);
-      setGeneratedTemplate({
-        error: e.response?.data?.error || "Failed to generate template",
-      });
+      const errorMessage = e?.response?.data?.error
+        || e?.message
+        || "Failed to generate or save template";
+
+      console.error("Error Details:", errorMessage);
+      setGeneratedTemplate({ error: errorMessage });
     } finally {
       setLoading(false);
     }
