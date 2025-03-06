@@ -41,6 +41,7 @@ function AIInputBox() {
           tid: tid,
           design: result.data,
           email: userDetail.email,
+          description: userInput
         },
         { optimisticUpdate: false } // Disable optimistic updates
       );

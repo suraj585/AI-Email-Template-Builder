@@ -40,16 +40,21 @@ function Provider({ children }) {
       // Safely parse emailTemplate from localStorage
       const emailTemplateStorage = localStorage.getItem("emailTemplate");
       if (emailTemplateStorage) {
-        try {
-          const parsedEmailTemplate = JSON.parse(emailTemplateStorage);
-          setEmailTemplate(parsedEmailTemplate ?? []);
-        } catch (error) {
-          console.error(
-            "Failed to parse emailTemplate from localStorage:",
-            error
-          );
-          setEmailTemplate([]); // Fallback to an empty array
-        }
+       try {
+         const parsedEmailTemplate = JSON.parse(emailTemplateStorage);
+         // Ensure parsed value is an array
+         if (Array.isArray(parsedEmailTemplate)) {
+           setEmailTemplate(parsedEmailTemplate);
+         } else {
+           console.error(
+             "Invalid emailTemplate format, resetting to empty array"
+           );
+           setEmailTemplate([]);
+         }
+       } catch (error) {
+         console.error("Failed to parse emailTemplate:", error);
+         setEmailTemplate([]); // Fallback to empty array
+       }
       } else {
         setEmailTemplate([]); // Fallback to an empty array
       }

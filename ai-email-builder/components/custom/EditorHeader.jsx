@@ -1,13 +1,26 @@
 "use client";
-import { useScreenSize } from "@/app/provider";
+import { useEmailTemplate, useScreenSize } from "@/app/provider";
 import { Code, Monitor, Smartphone } from "lucide-react";
 import Image from "next/image";
 import { Button } from "../ui/button";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useParams } from "next/navigation";
+import { toast } from "sonner";
 
 function EditorHeader({ viewHTMLCode }) {
   // Correctly call the useScreenSize hook
   const { screenSize, setScreenSize } = useScreenSize();
-
+  const updateEmailTemplate=useMutation(api.emailTemplate.UpdateTemplateDesign)
+  const { templateId } = useParams();
+  const { emailTemplate, setEmailTemplate } = useEmailTemplate();
+  const onSaveTemplate =async() => {
+    await updateEmailTemplate({
+      tid: templateId,
+      design:emailTemplate
+    })
+    toast('Email Template Saved Successfully!')
+  }
   return (
     <div className="p-4 shadow-sm flex justify-between items-center">
       {/* Logo */}
@@ -48,7 +61,7 @@ function EditorHeader({ viewHTMLCode }) {
           <Code />
         </Button>
         <Button variant="outline">Send Test Email</Button>
-        <Button>Save Template</Button>
+        <Button onClick={onSaveTemplate}>Save Template</Button>
       </div>
     </div>
   );

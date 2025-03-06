@@ -1,5 +1,5 @@
 "use client"
-import { useUserDetail } from "@/app/provider";
+import { useEmailTemplate, useUserDetail } from "@/app/provider";
 import Canvas from "@/components/custom/Canvas";
 import EditorHeader from "@/components/custom/EditorHeader";
 import ElementsSideBar from "@/components/custom/ElementsSideBar";
@@ -13,6 +13,8 @@ function Editor() {
   const [viewHTMLCode, setViewHtmlCode] = useState();
   const { templateId } = useParams();
   const { userDetail, setUserDetail } = useUserDetail();
+  const [loading, setLoading] = useState(false);
+  const { emailTemplate, setEmailTemplate } = useEmailTemplate();
   const convex = useConvex();
 
   useEffect(() => {
@@ -23,23 +25,30 @@ function Editor() {
   },[userDetail])
 
   const GetTemplateData=async()=> {
+    setLoading(true)
     const result = await convex.query(api.emailTemplate.GetTemplateDesign, {
       tid: templateId,
       email:userDetail?.email
     })
     console.log(result);
+    setEmailTemplate(result?.design)
+    setLoading(false);
   }
   return (
     <div>
       <EditorHeader viewHTMLCode={(v) => setViewHtmlCode(v)} />
 
-      <div className="grid grid-cols-5">
+      {!loading ? <div className="grid grid-cols-5">
         <ElementsSideBar />
         <div className="col-span-3 bg-gray-100">
-          <Canvas viewHTMLCode={viewHTMLCode} closeDialog={()=>setViewHtmlCode(false)}/>
+          <Canvas viewHTMLCode={viewHTMLCode} closeDialog={() => setViewHtmlCode(false)} />
         </div>
         <Settings />
+      </div> :
+        <div>
+          <h2>Please wait....</h2>
       </div>
+      }
     </div>
   );
 }
