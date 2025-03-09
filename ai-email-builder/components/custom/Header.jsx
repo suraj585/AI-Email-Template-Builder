@@ -1,10 +1,10 @@
 "use client";
 import { useUserDetail } from "@/app/provider";
 import Image from "next/image";
-import { Button } from "../ui/button";
-import SignInButton from "./SignInButton";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Button } from "../ui/button";
+import SignInButton from "./SignInButton";
 
 function Header() {
   const { userDetail, setUserDetail } = useUserDetail();
